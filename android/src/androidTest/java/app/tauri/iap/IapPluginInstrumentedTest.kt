@@ -87,6 +87,30 @@ class IapPluginInstrumentedTest {
     }
 
     @Test
+    fun testConsumePurchaseArgs_withNullToken() {
+        val args = ConsumePurchaseArgs()
+        assertNull(args.purchaseToken)
+    }
+
+    @Test
+    fun testConsumePurchaseArgs_withValidToken() {
+        val token = "consumable_purchase_token_67890"
+        val args = ConsumePurchaseArgs().apply {
+            purchaseToken = token
+        }
+        assertEquals(token, args.purchaseToken)
+    }
+
+    @Test
+    fun testConsumePurchaseArgs_withLongToken() {
+        val longToken = "a".repeat(500)
+        val args = ConsumePurchaseArgs().apply {
+            purchaseToken = longToken
+        }
+        assertEquals(500, args.purchaseToken?.length)
+    }
+
+    @Test
     fun testGetProductStatusArgs_configuration() {
         val args = GetProductStatusArgs().apply {
             productId = "premium.subscription"

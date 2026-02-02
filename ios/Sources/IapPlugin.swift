@@ -25,6 +25,10 @@ class AcknowledgePurchaseArgs: Decodable {
     let purchaseToken: String
 }
 
+class ConsumePurchaseArgs: Decodable {
+    let purchaseToken: String
+}
+
 class GetProductStatusArgs: Decodable {
     let productId: String
     let productType: String?
@@ -259,6 +263,13 @@ class IapPlugin: Plugin {
     
     @objc public func acknowledgePurchase(_ invoke: Invoke) throws {
         // iOS automatically acknowledges purchases, so this is a no-op
+        invoke.resolve(["success": true])
+    }
+    
+    @objc public func consumePurchase(_ invoke: Invoke) throws {
+        // iOS/StoreKit 2 automatically handles consumable products
+        // The transaction is finished when purchase() completes
+        // This is a no-op for compatibility with Android
         invoke.resolve(["success": true])
     }
     

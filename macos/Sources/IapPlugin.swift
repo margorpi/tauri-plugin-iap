@@ -206,6 +206,13 @@ class IapPlugin {
         return try serializeToJSON(["success": true])
     }
 
+    public func consumePurchase(purchaseToken: RustString) async throws(FFIResult) -> String {
+        // macOS/StoreKit 2 automatically handles consumable products
+        // The transaction is finished when purchase() completes
+        // This is a no-op for compatibility with Android
+        return try serializeToJSON(["success": true])
+    }
+
     public func getProductStatus(productId: RustString, productType: RustString)
         async throws(FFIResult) -> String
     {

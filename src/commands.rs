@@ -51,3 +51,11 @@ pub(crate) async fn get_product_status<R: Runtime>(
         .get_product_status(payload.product_id, payload.product_type)
         .await
 }
+
+#[command]
+pub(crate) async fn consume_purchase<R: Runtime>(
+    app: AppHandle<R>,
+    payload: ConsumePurchaseRequest,
+) -> Result<ConsumePurchaseResponse> {
+    app.iap().consume_purchase(payload.purchase_token).await
+}

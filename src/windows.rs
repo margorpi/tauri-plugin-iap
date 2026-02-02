@@ -574,6 +574,15 @@ impl<R: Runtime> Iap<R> {
             })
         }
     }
+
+    pub async fn consume_purchase(
+        &self,
+        _purchase_token: String,
+    ) -> crate::Result<ConsumePurchaseResponse> {
+        // Windows Store handles consumable products automatically
+        // This method exists for API compatibility
+        Ok(ConsumePurchaseResponse { success: true })
+    }
 }
 
 #[cfg(test)]

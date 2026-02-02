@@ -1,0 +1,9 @@
+# Automatically generated - DO NOT EDIT!
+# Tauri API command permissions: iap -> consume_purchase
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-consume-purchase"
+description = "Enables the consume_purchase command without any pre-configured scope."
+commands.allow = ["consume_purchase"]

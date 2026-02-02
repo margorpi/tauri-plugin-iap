@@ -98,4 +98,17 @@ impl<R: Runtime> Iap<R> {
             .await
             .map_err(Into::into)
     }
+
+    pub async fn consume_purchase(
+        &self,
+        purchase_token: String,
+    ) -> crate::Result<ConsumePurchaseResponse> {
+        self.0
+            .run_mobile_plugin_async(
+                "consumePurchase",
+                ConsumePurchaseRequest { purchase_token },
+            )
+            .await
+            .map_err(Into::into)
+    }
 }

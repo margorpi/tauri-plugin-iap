@@ -62,6 +62,7 @@ mod ffi {
         ) -> Result<String, FFIResult>;
         async fn restorePurchases(&self, productType: String) -> Result<String, FFIResult>;
         async fn acknowledgePurchase(&self, purchaseToken: String) -> Result<String, FFIResult>;
+        async fn consumePurchase(&self, purchaseToken: String) -> Result<String, FFIResult>;
         async fn getProductStatus(
             &self,
             productId: String,
@@ -175,5 +176,14 @@ impl<R: Runtime> Iap<R> {
             .getProductStatus(product_id, product_type)
             .await
             .parse()
+    }
+
+    pub async fn consume_purchase(
+        &self,
+        purchase_token: String,
+    ) -> crate::Result<ConsumePurchaseResponse> {
+        validation::require_bundle()?;
+
+        self.plugin.consumePurchase(purchase_token).await.parse()
     }
 }

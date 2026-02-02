@@ -311,6 +311,45 @@ export async function acknowledgePurchase(
 }
 
 /**
+ * Response from consuming a purchase
+ */
+export interface ConsumePurchaseResponse {
+  success: boolean;
+}
+
+/**
+ * Consume a purchase for consumable products (required on Android).
+ * 
+ * For consumable products (coins, items, etc.), call this after successfully
+ * delivering the product to allow repeat purchases. On Android, if not called,
+ * users will see "You already own this item" on subsequent purchase attempts.
+ * 
+ * On iOS/macOS/Windows, this is a no-op but safe to call for cross-platform code.
+ * For non-consumable products or subscriptions, use `acknowledgePurchase` instead.
+ *
+ * @param purchaseToken - Purchase token from the transaction
+ * @returns Promise resolving to consumption status
+ * @example
+ * ```typescript
+ * const purchase = await purchase('com.example.coins_100', 'inapp');
+ * await deliverProductToUser(100); // Give user the coins
+ * await consumePurchase(purchase.purchaseToken); // Allow repeat purchase
+ * ```
+ */
+export async function consumePurchase(
+  purchaseToken: string,
+): Promise<ConsumePurchaseResponse> {
+  return await invoke<ConsumePurchaseResponse>(
+    "plugin:iap|consume_purchase",
+    {
+      payload: {
+        purchaseToken,
+      },
+    },
+  );
+}
+
+/**
  * Get the current status of a product for the user.
  * Checks if the product is owned, expired, or available for purchase.
  *

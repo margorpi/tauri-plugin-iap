@@ -144,6 +144,18 @@ pub struct AcknowledgePurchaseResponse {
     pub success: bool,
 }
 
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConsumePurchaseRequest {
+    pub purchase_token: String,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ConsumePurchaseResponse {
+    pub success: bool,
+}
+
 /// Keep in sync with PurchaseState in guest-js/index.ts
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum PurchaseStateValue {
