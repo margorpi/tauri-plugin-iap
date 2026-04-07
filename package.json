@@ -1,6 +1,6 @@
 {
   "name": "@choochmeque/tauri-plugin-iap-api",
-  "version": "0.7.1",
+  "version": "0.8.2",
   "license": "MIT",
   "author": "You",
   "description": "A Tauri v2 plugin that enables In-App Purchases (IAP)",
@@ -51,10 +51,10 @@
     "@vitest/coverage-v8": "^4.0.13",
     "@vitest/ui": "^4.0.13",
     "happy-dom": "^20.0.10",
-    "prettier": "3.8.0",
+    "prettier": "3.8.1",
     "rollup": "^4.9.6",
     "tslib": "^2.6.2",
-    "typescript": "^5.3.3",
+    "typescript": "^6.0.2",
     "vitest": "^4.0.13"
   },
   "packageManager": "pnpm@10.9.0+sha512.0486e394640d3c1fb3c9d43d49cf92879ff74f8516959c235308f5a8f62e2e19528a65cdc2a3058f587cde71eba3d5b56327c8c33a97e4c4051ca48a10ca2d5f"

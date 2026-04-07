@@ -1,7 +1,7 @@
 use serde::de::DeserializeOwned;
 use tauri::{
-    plugin::{PluginApi, PluginHandle},
     AppHandle, Runtime,
+    plugin::{PluginApi, PluginHandle},
 };
 
 use crate::models::*;
@@ -82,6 +82,19 @@ impl<R: Runtime> Iap<R> {
             .map_err(Into::into)
     }
 
+    pub async fn consume_purchase(
+        &self,
+        purchase_token: String,
+    ) -> crate::Result<ConsumePurchaseResponse> {
+        self.0
+            .run_mobile_plugin_async(
+                "consumePurchase",
+                ConsumePurchaseRequest { purchase_token },
+            )
+            .await
+            .map_err(Into::into)
+    }
+
     pub async fn get_product_status(
         &self,
         product_id: String,
@@ -94,19 +107,6 @@ impl<R: Runtime> Iap<R> {
                     product_id,
                     product_type,
                 },
-            )
-            .await
-            .map_err(Into::into)
-    }
-
-    pub async fn consume_purchase(
-        &self,
-        purchase_token: String,
-    ) -> crate::Result<ConsumePurchaseResponse> {
-        self.0
-            .run_mobile_plugin_async(
-                "consumePurchase",
-                ConsumePurchaseRequest { purchase_token },
             )
             .await
             .map_err(Into::into)

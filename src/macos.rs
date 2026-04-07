@@ -1,5 +1,5 @@
 use serde::de::DeserializeOwned;
-use tauri::{plugin::PluginApi, AppHandle, Runtime};
+use tauri::{AppHandle, Runtime, plugin::PluginApi};
 
 use crate::models::*;
 
@@ -165,6 +165,15 @@ impl<R: Runtime> Iap<R> {
             .parse()
     }
 
+    pub async fn consume_purchase(
+        &self,
+        purchase_token: String,
+    ) -> crate::Result<ConsumePurchaseResponse> {
+        validation::require_bundle()?;
+
+        self.plugin.consumePurchase(purchase_token).await.parse()
+    }
+
     pub async fn get_product_status(
         &self,
         product_id: String,
@@ -176,14 +185,5 @@ impl<R: Runtime> Iap<R> {
             .getProductStatus(product_id, product_type)
             .await
             .parse()
-    }
-
-    pub async fn consume_purchase(
-        &self,
-        purchase_token: String,
-    ) -> crate::Result<ConsumePurchaseResponse> {
-        validation::require_bundle()?;
-
-        self.plugin.consumePurchase(purchase_token).await.parse()
     }
 }

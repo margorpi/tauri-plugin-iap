@@ -41,9 +41,18 @@ enum PurchaseStateValue: Int {
     case pending = 2
 }
 
+actor EmittedTransactionTracker {
+    private var transactionIds = Set<String>()
+
+    func insert(_ transactionId: String) -> Bool {
+        transactionIds.insert(transactionId).inserted
+    }
+}
+
 @available(iOS 15.0, *)
 class IapPlugin: Plugin {
     private var updateListenerTask: Task<Void, Error>?
+    private let emittedTransactions = EmittedTransactionTracker()
     
     public override func load(webview: WKWebView) {
         super.load(webview: webview)
@@ -165,10 +174,9 @@ class IapPlugin: Plugin {
             case .success(let verification):
                 switch verification {
                 case .verified(let transaction):
-                    // Finish the transaction
-                    await transaction.finish()
-
                     let purchase = try await createPurchaseObject(from: verification, product: product)
+                    await emitPurchaseUpdatedIfNeeded(purchase)
+                    await transaction.finish()
                     invoke.resolve(purchase)
 
                 case .unverified(_, _):
@@ -265,11 +273,11 @@ class IapPlugin: Plugin {
         // iOS automatically acknowledges purchases, so this is a no-op
         invoke.resolve(["success": true])
     }
-    
+
     @objc public func consumePurchase(_ invoke: Invoke) throws {
-        // iOS/StoreKit 2 automatically handles consumable products
-        // The transaction is finished when purchase() completes
-        // This is a no-op for compatibility with Android
+        _ = try invoke.parseArgs(ConsumePurchaseArgs.self)
+        // StoreKit 2 handles consumable availability after the transaction is finished.
+        // This method is a no-op on Apple platforms so cross-platform code can call it safely.
         invoke.resolve(["success": true])
     }
     
@@ -349,8 +357,7 @@ class IapPlugin: Plugin {
             // Get product details
             if let product = try? await Product.products(for: [transaction.productID]).first {
                 if let purchase = try? await createPurchaseObject(from: result, product: product) {
-                    // Emit event - convert to JSObject-compatible format
-                    trigger("purchaseUpdated", data: purchase as! JSObject)
+                    await emitPurchaseUpdatedIfNeeded(purchase)
                 }
             }
 
@@ -360,6 +367,17 @@ class IapPlugin: Plugin {
         case .unverified(_, _):
             // Handle unverified transaction
             break
+        }
+    }
+
+    private func emitPurchaseUpdatedIfNeeded(_ purchase: JsonObject) async {
+        guard let transactionId = purchase["purchaseToken"] as? String else {
+            trigger("purchaseUpdated", data: purchase as! JSObject)
+            return
+        }
+
+        if await emittedTransactions.insert(transactionId) {
+            trigger("purchaseUpdated", data: purchase as! JSObject)
         }
     }
     
@@ -444,6 +462,9 @@ func initPlugin() -> Plugin {
                 invoke.reject("IAP requires iOS 15.0 or later")
             }
             @objc func acknowledgePurchase(_ invoke: Invoke) {
+                invoke.reject("IAP requires iOS 15.0 or later")
+            }
+            @objc func consumePurchase(_ invoke: Invoke) {
                 invoke.reject("IAP requires iOS 15.0 or later")
             }
             @objc func getProductStatus(_ invoke: Invoke) {

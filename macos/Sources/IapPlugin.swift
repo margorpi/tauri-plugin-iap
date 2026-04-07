@@ -11,8 +11,17 @@ enum PurchaseStateValue: Int {
     case pending = 2
 }
 
+actor EmittedTransactionTracker {
+    private var transactionIds = Set<String>()
+
+    func insert(_ transactionId: String) -> Bool {
+        transactionIds.insert(transactionId).inserted
+    }
+}
+
 class IapPlugin {
     private var updateListenerTask: Task<Void, Error>?
+    private let emittedTransactions = EmittedTransactionTracker()
 
     init() {
         // Start listening for transaction updates
@@ -138,10 +147,9 @@ class IapPlugin {
         case .success(let verification):
             switch verification {
             case .verified(let transaction):
-                // Finish the transaction
-                await transaction.finish()
-
                 let purchase = try await createPurchaseObject(from: verification, product: product)
+                await emitPurchaseUpdatedIfNeeded(purchase)
+                await transaction.finish()
                 return try serializeToJSON(purchase)
 
             case .unverified(_, _):
@@ -207,9 +215,9 @@ class IapPlugin {
     }
 
     public func consumePurchase(purchaseToken: RustString) async throws(FFIResult) -> String {
-        // macOS/StoreKit 2 automatically handles consumable products
-        // The transaction is finished when purchase() completes
-        // This is a no-op for compatibility with Android
+        _ = purchaseToken
+        // StoreKit 2 handles consumable availability after the transaction is finished.
+        // This method is a no-op on Apple platforms so cross-platform code can call it safely.
         return try serializeToJSON(["success": true])
     }
 
@@ -298,9 +306,9 @@ class IapPlugin {
             // Get product details
             if let product = try? await Product.products(for: [transaction.productID]).first {
                 if let purchase = try? await createPurchaseObject(from: result, product: product),
-                   let jsonString = try? serializeToJSON(purchase) {
+                   let jsonString = try? await serializePurchaseUpdateIfNeeded(purchase) {
                     try? trigger("purchaseUpdated", jsonString)
-                }
+                } 
             }
 
             // Always finish transactions
@@ -309,6 +317,24 @@ class IapPlugin {
         case .unverified(_, _):
             // Handle unverified transaction
             break
+        }
+    }
+
+    private func serializePurchaseUpdateIfNeeded(_ purchase: JsonObject) async throws(FFIResult) -> String? {
+        guard let transactionId = purchase["purchaseToken"] as? String else {
+            return try serializeToJSON(purchase)
+        }
+
+        guard await emittedTransactions.insert(transactionId) else {
+            return nil
+        }
+
+        return try serializeToJSON(purchase)
+    }
+
+    private func emitPurchaseUpdatedIfNeeded(_ purchase: JsonObject) async {
+        if let jsonString = try? await serializePurchaseUpdateIfNeeded(purchase) {
+            try? trigger("purchaseUpdated", jsonString)
         }
     }
 

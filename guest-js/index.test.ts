@@ -6,6 +6,7 @@ import {
   restorePurchases,
   getPurchaseHistory,
   acknowledgePurchase,
+  consumePurchase,
   getProductStatus,
   onPurchaseUpdated,
   PurchaseState,
@@ -14,6 +15,7 @@ import {
   type RestorePurchasesResponse,
   type GetPurchaseHistoryResponse,
   type AcknowledgePurchaseResponse,
+  type ConsumePurchaseResponse,
   type ProductStatus,
   type PurchaseOptions,
 } from "./index";
@@ -331,6 +333,31 @@ describe("IAP Plugin", () => {
       vi.mocked(invoke).mockResolvedValue(mockResponse);
 
       const result = await acknowledgePurchase("TOKEN123");
+
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe("consumePurchase", () => {
+    it("should consume purchase with token", async () => {
+      const mockResponse: ConsumePurchaseResponse = { success: true };
+      vi.mocked(invoke).mockResolvedValue(mockResponse);
+
+      const result = await consumePurchase("TOKEN123");
+
+      expect(invoke).toHaveBeenCalledWith("plugin:iap|consume_purchase", {
+        payload: {
+          purchaseToken: "TOKEN123",
+        },
+      });
+      expect(result).toEqual(mockResponse);
+    });
+
+    it("should handle consumption failure", async () => {
+      const mockResponse: ConsumePurchaseResponse = { success: false };
+      vi.mocked(invoke).mockResolvedValue(mockResponse);
+
+      const result = await consumePurchase("TOKEN123");
 
       expect(result.success).toBe(false);
     });

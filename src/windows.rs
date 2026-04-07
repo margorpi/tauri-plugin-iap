@@ -1,8 +1,8 @@
 use serde::de::DeserializeOwned;
 use tauri::Emitter;
 use tauri::Manager;
-use tauri::{plugin::PluginApi, AppHandle, Runtime};
-use windows::core::{Interface, HSTRING};
+use tauri::{AppHandle, Runtime, plugin::PluginApi};
+use windows::core::{HSTRING, Interface};
 use windows::{
     Foundation::DateTime,
     Services::Store::{
@@ -508,6 +508,15 @@ impl<R: Runtime> Iap<R> {
         Ok(AcknowledgePurchaseResponse { success: true })
     }
 
+    pub async fn consume_purchase(
+        &self,
+        _purchase_token: String,
+    ) -> crate::Result<ConsumePurchaseResponse> {
+        // Windows Store handles consumable products automatically
+        // This method exists for API compatibility
+        Ok(ConsumePurchaseResponse { success: true })
+    }
+
     pub async fn get_product_status(
         &self,
         product_id: String,
@@ -573,15 +582,6 @@ impl<R: Runtime> Iap<R> {
                 purchase_token: None,
             })
         }
-    }
-
-    pub async fn consume_purchase(
-        &self,
-        _purchase_token: String,
-    ) -> crate::Result<ConsumePurchaseResponse> {
-        // Windows Store handles consumable products automatically
-        // This method exists for API compatibility
-        Ok(ConsumePurchaseResponse { success: true })
     }
 }
 

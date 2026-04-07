@@ -37,7 +37,7 @@ jobs:
 
       - name: Upload coverage to Codecov
         if: ${{ github.actor != 'dependabot[bot]' }}
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
@@ -59,7 +59,7 @@ jobs:
           node-version: '20'
 
       - name: Install pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v5
 
       - name: Install dependencies
         run: pnpm install
@@ -69,7 +69,7 @@ jobs:
 
       - name: Upload coverage to Codecov
         if: ${{ github.actor != 'dependabot[bot]' }}
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
@@ -78,7 +78,7 @@ jobs:
           name: javascript-coverage
 
       - name: Upload coverage reports
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: js-coverage
@@ -99,7 +99,7 @@ jobs:
           java-version: '17'
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -119,7 +119,7 @@ jobs:
 
       - name: Upload coverage to Codecov
         if: ${{ github.actor != 'dependabot[bot]' }}
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
@@ -129,14 +129,14 @@ jobs:
           root_dir: ${{ github.workspace }}
 
       - name: Upload test results
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: android-test-results
           path: android/build/test-results/
 
       - name: Upload coverage reports
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: android-coverage
@@ -157,7 +157,7 @@ jobs:
           java-version: '17'
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -189,7 +189,7 @@ jobs:
 
       - name: Upload coverage to Codecov
         if: ${{ github.actor != 'dependabot[bot]' }}
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
@@ -199,14 +199,14 @@ jobs:
           root_dir: ${{ github.workspace }}
 
       - name: Upload instrumented test results
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: android-instrumented-test-results
           path: android/build/outputs/androidTest-results/
 
       - name: Upload instrumented coverage reports
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: android-instrumented-coverage
@@ -244,7 +244,7 @@ jobs:
 
       - name: Upload coverage to Codecov
         if: ${{ github.actor != 'dependabot[bot]' }}
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
@@ -253,14 +253,14 @@ jobs:
           name: ios-coverage
 
       - name: Upload test results
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: ios-test-results
           path: ios/TestResults.xcresult
 
       - name: Upload coverage reports
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: ios-coverage
@@ -298,7 +298,7 @@ jobs:
 
       - name: Upload coverage to Codecov
         if: ${{ github.actor != 'dependabot[bot]' }}
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
@@ -307,14 +307,14 @@ jobs:
           name: macos-coverage
 
       - name: Upload test results
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: macos-test-results
           path: macos/TestResults.xcresult
 
       - name: Upload coverage reports
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: macos-coverage

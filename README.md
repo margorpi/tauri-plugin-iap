@@ -21,6 +21,7 @@ A Tauri plugin for In-App Purchases (IAP) with support for subscriptions on iOS 
 - Fraud prevention with obfuscated account/profile IDs (Android)
 - App account token support for tracking (iOS)
 - Automatic offer token selection (Android)
+- Subscription upgrades/downgrades with proration modes (Android)
 
 ## Platform Support
 
@@ -45,7 +46,7 @@ Add the plugin to your Tauri project's `Cargo.toml`:
 
 ```toml
 [dependencies]
-tauri-plugin-iap = "0.7"
+tauri-plugin-iap = "0.8"
 ```
 
 Configure the plugin permissions in your `capabilities/default.json`:
@@ -111,6 +112,7 @@ import {
   purchase,
   restorePurchases,
   acknowledgePurchase,
+  consumePurchase,
   getProductStatus,
   onPurchaseUpdated,
   PurchaseState
@@ -148,11 +150,25 @@ const purchaseResult = await purchase('subscription_id_1', 'subs', {
   appAccountToken: '550e8400-e29b-41d4-a716-446655440000'
 });
 
+// Upgrade/downgrade subscription (Android)
+import { SubscriptionReplacementMode } from '@choochmeque/tauri-plugin-iap-api';
+
+const upgraded = await purchase('premium_subscription', 'subs', {
+  offerToken: 'premium_offer_token',
+  oldPurchaseToken: currentSubscription.purchaseToken,
+  subscriptionReplacementMode: SubscriptionReplacementMode.WITH_TIME_PRORATION
+});
+
 // Restore purchases (specify product type)
 const restored = await restorePurchases('subs');
 
 // Acknowledge a purchase (Android only, iOS auto-acknowledges)
 await acknowledgePurchase(purchaseResult.purchaseToken);
+
+// Consume a consumable product after delivering it to the user
+const coinsPurchase = await purchase('coins_100', 'inapp');
+await grantCoinsToUser(100);
+await consumePurchase(coinsPurchase.purchaseToken);
 
 // Listen for purchase updates
 const listener = await onPurchaseUpdated((purchase) => {
@@ -251,6 +267,8 @@ Initiates a purchase flow with enhanced options for fraud prevention and account
   - `obfuscatedAccountId`: (Android) Hashed account ID for fraud prevention
   - `obfuscatedProfileId`: (Android) Hashed profile ID for fraud prevention
   - `appAccountToken`: (iOS) UUID string for account tracking and fraud prevention
+  - `oldPurchaseToken`: (Android) Purchase token of existing subscription to replace for upgrades/downgrades
+  - `subscriptionReplacementMode`: (Android) Proration mode using `SubscriptionReplacementMode` enum (defaults to `WITH_TIME_PRORATION`)
 
 **Returns:** Purchase object with transaction details
 
@@ -265,6 +283,9 @@ Returns the complete purchase history.
 
 ### `acknowledgePurchase(purchaseToken: string)`
 Acknowledges a purchase (required on Android within 3 days, no-op on iOS).
+
+### `consumePurchase(purchaseToken: string)`
+Consumes a consumable purchase after the item has been delivered to the user. This is required on Android before the same consumable can be purchased again. On iOS, macOS, and Windows, this is a no-op for cross-platform compatibility.
 
 ### `getProductStatus(productId: string, productType: 'subs' | 'inapp' = 'subs')`
 Checks the ownership and subscription status of a specific product.
@@ -338,6 +359,28 @@ Listens for purchase state changes.
 2. Use StoreKit Configuration files for local testing
 3. App must be code-signed to use StoreKit
 4. Clear purchase history in System Settings > App Store > Sandbox Account
+
+## Troubleshooting
+
+<details>
+<summary><code>dyld: Library not loaded: @rpath/libswift_Concurrency.dylib</code></summary>
+
+This error occurs when `MACOSX_DEPLOYMENT_TARGET` is below 13.0. Tauri defaults to 11.0 in debug mode.
+
+**Option 1:** Add `.cargo/config.toml` to your project:
+
+```toml
+[env]
+MACOSX_DEPLOYMENT_TARGET = "13.0"
+```
+
+**Option 2:** Set the environment variable when running:
+
+```bash
+MACOSX_DEPLOYMENT_TARGET="13.0" pnpm tauri dev
+```
+
+</details>
 
 ## License
 

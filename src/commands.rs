@@ -1,4 +1,4 @@
-use tauri::{command, AppHandle, Runtime};
+use tauri::{AppHandle, Runtime, command};
 
 use crate::models::*;
 use crate::{IapExt, Result};
@@ -43,6 +43,14 @@ pub(crate) async fn acknowledge_purchase<R: Runtime>(
 }
 
 #[command]
+pub(crate) async fn consume_purchase<R: Runtime>(
+    app: AppHandle<R>,
+    payload: ConsumePurchaseRequest,
+) -> Result<ConsumePurchaseResponse> {
+    app.iap().consume_purchase(payload.purchase_token).await
+}
+
+#[command]
 pub(crate) async fn get_product_status<R: Runtime>(
     app: AppHandle<R>,
     payload: GetProductStatusRequest,
@@ -50,12 +58,4 @@ pub(crate) async fn get_product_status<R: Runtime>(
     app.iap()
         .get_product_status(payload.product_id, payload.product_type)
         .await
-}
-
-#[command]
-pub(crate) async fn consume_purchase<R: Runtime>(
-    app: AppHandle<R>,
-    payload: ConsumePurchaseRequest,
-) -> Result<ConsumePurchaseResponse> {
-    app.iap().consume_purchase(payload.purchase_token).await
 }

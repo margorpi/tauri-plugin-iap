@@ -1,5 +1,5 @@
 use serde::de::DeserializeOwned;
-use tauri::{plugin::PluginApi, AppHandle, Runtime};
+use tauri::{AppHandle, Runtime, plugin::PluginApi};
 
 use crate::models::*;
 
@@ -54,20 +54,20 @@ impl<R: Runtime> Iap<R> {
         )))
     }
 
-    pub async fn get_product_status(
+    pub async fn consume_purchase(
         &self,
-        _product_id: String,
-        _product_type: String,
-    ) -> crate::Result<ProductStatus> {
+        _purchase_token: String,
+    ) -> crate::Result<ConsumePurchaseResponse> {
         Err(crate::Error::from(std::io::Error::other(
             "IAP is not supported on this platform",
         )))
     }
 
-    pub async fn consume_purchase(
+    pub async fn get_product_status(
         &self,
-        _purchase_token: String,
-    ) -> crate::Result<ConsumePurchaseResponse> {
+        _product_id: String,
+        _product_type: String,
+    ) -> crate::Result<ProductStatus> {
         Err(crate::Error::from(std::io::Error::other(
             "IAP is not supported on this platform",
         )))

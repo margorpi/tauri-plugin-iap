@@ -10,6 +10,24 @@ var PurchaseState;
     PurchaseState[PurchaseState["PENDING"] = 2] = "PENDING";
 })(PurchaseState || (PurchaseState = {}));
 /**
+ * Google Play subscription replacement modes for upgrades/downgrades.
+ * Used with `subscriptionReplacementMode` in `PurchaseOptions`.
+ * @see https://developer.android.com/reference/com/android/billingclient/api/BillingFlowParams.SubscriptionUpdateParams.ReplacementMode
+ */
+var SubscriptionReplacementMode;
+(function (SubscriptionReplacementMode) {
+    /** Replacement takes effect when the old plan expires, and the new price is charged at the same time. */
+    SubscriptionReplacementMode[SubscriptionReplacementMode["DEFERRED"] = 6] = "DEFERRED";
+    /** Replacement takes effect immediately. The billing cycle remains the same. The remaining value from the old price is prorated for the new plan. */
+    SubscriptionReplacementMode[SubscriptionReplacementMode["WITH_TIME_PRORATION"] = 1] = "WITH_TIME_PRORATION";
+    /** Replacement takes effect immediately. The new price is charged immediately and in full. Any remaining period from the old plan is used to extend the new billing date. */
+    SubscriptionReplacementMode[SubscriptionReplacementMode["CHARGE_FULL_PRICE"] = 5] = "CHARGE_FULL_PRICE";
+    /** Replacement takes effect immediately. The new plan price is reduced by the prorated cost of the old plan for the remaining period. */
+    SubscriptionReplacementMode[SubscriptionReplacementMode["CHARGE_PRORATED_PRICE"] = 2] = "CHARGE_PRORATED_PRICE";
+    /** Replacement takes effect immediately with no proration. The user is charged full price for the new plan. */
+    SubscriptionReplacementMode[SubscriptionReplacementMode["WITHOUT_PRORATION"] = 3] = "WITHOUT_PRORATION";
+})(SubscriptionReplacementMode || (SubscriptionReplacementMode = {}));
+/**
  * Initialize the IAP plugin.
  *
  * @deprecated This function is no longer needed. The billing client is now initialized automatically when the plugin loads. This function will be removed in the next major release.
@@ -62,6 +80,13 @@ async function getProducts(productIds, productType = "subs") {
  *   offerToken: 'offer_token_here',
  *   obfuscatedAccountId: 'user_account_id',
  *   obfuscatedProfileId: 'user_profile_id'
+ * });
+ *
+ * // Subscription upgrade/downgrade (Android)
+ * const purchase = await purchase('com.example.premium', 'subs', {
+ *   offerToken: 'new_plan_offer_token',
+ *   oldPurchaseToken: 'existing_subscription_purchase_token',
+ *   subscriptionReplacementMode: SubscriptionReplacementMode.WITH_TIME_PRORATION
  * });
  * ```
  */
@@ -133,22 +158,20 @@ async function acknowledgePurchase(purchaseToken) {
     });
 }
 /**
- * Consume a purchase for consumable products (required on Android).
+ * Consume a purchase for a consumable product.
  *
- * For consumable products (coins, items, etc.), call this after successfully
- * delivering the product to allow repeat purchases. On Android, if not called,
- * users will see "You already own this item" on subsequent purchase attempts.
- *
- * On iOS/macOS/Windows, this is a no-op but safe to call for cross-platform code.
- * For non-consumable products or subscriptions, use `acknowledgePurchase` instead.
+ * Call this after you have granted the purchased item to the user.
+ * On Android, consuming the purchase is required before the same item can be
+ * bought again. On Apple platforms and Windows, this is a safe no-op so the
+ * same code path can be used cross-platform.
  *
  * @param purchaseToken - Purchase token from the transaction
  * @returns Promise resolving to consumption status
  * @example
  * ```typescript
  * const purchase = await purchase('com.example.coins_100', 'inapp');
- * await deliverProductToUser(100); // Give user the coins
- * await consumePurchase(purchase.purchaseToken); // Allow repeat purchase
+ * await deliverCoinsToUser(100);
+ * await consumePurchase(purchase.purchaseToken);
  * ```
  */
 async function consumePurchase(purchaseToken) {
@@ -207,4 +230,4 @@ async function onPurchaseUpdated(callback) {
     return await addPluginListener("iap", "purchaseUpdated", callback);
 }
 
-export { PurchaseState, acknowledgePurchase, consumePurchase, getProductStatus, getProducts, getPurchaseHistory, initialize, onPurchaseUpdated, purchase, restorePurchases };
+export { PurchaseState, SubscriptionReplacementMode, acknowledgePurchase, consumePurchase, getProductStatus, getProducts, getPurchaseHistory, initialize, onPurchaseUpdated, purchase, restorePurchases };
