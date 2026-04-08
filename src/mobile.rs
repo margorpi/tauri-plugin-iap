@@ -87,10 +87,7 @@ impl<R: Runtime> Iap<R> {
         purchase_token: String,
     ) -> crate::Result<ConsumePurchaseResponse> {
         self.0
-            .run_mobile_plugin_async(
-                "consumePurchase",
-                ConsumePurchaseRequest { purchase_token },
-            )
+            .run_mobile_plugin_async("consumePurchase", ConsumePurchaseRequest { purchase_token })
             .await
             .map_err(Into::into)
     }
